@@ -1,0 +1,30 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Parent stack calling child stacks
+
+Resources:
+  # ネットワークスタック
+  NetworkStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: "https://myapp-cloudformation-bs.s3.ap-northeast-1.amazonaws.com/Network.yaml"
+      Parameters:
+        VpcCidr: "10.0.0.0/16"
+  
+  # アプリケーションスタック
+  ApplicationStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: "https://myapp-cloudformation-bs.s3.ap-northeast-1.amazonaws.com/Application.yaml"
+      Parameters:
+        VpcId: !GetAtt NetworkStack.Outputs.VpcId
+        PublicSubnetId: !GetAtt NetworkStack.Outputs.PublicSubnetId
+        PrivateSubnetId: !GetAtt NetworkStack.Outputs.PrivateSubnetId
+
+Outputs:
+  NetworkStackId:
+    Description: The Stack ID for the Network Stack
+    Value: !Ref NetworkStack
+
+  ApplicationStackId:
+    Description: The Stack ID for the Application Stack
+    Value: !Ref ApplicationStack
