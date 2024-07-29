@@ -19,6 +19,20 @@ Resources:
         - Key: Name
           Value: MyVPC
 
+  # Internet Gateway
+  InternetGateway:
+    Type: "AWS::EC2::InternetGateway"
+    Properties:
+      Tags:
+      - Key: Name
+        Value: MyApp_IGW
+ 
+  AttachGateway:
+    Type: "AWS::EC2::VPCGatewayAttachment"
+    Properties:
+      InternetGatewayId: !Ref InternetGateway
+      VpcId: !Ref MyVPC
+
   # Public Subnet
   PublicSubnet:
     Type: AWS::EC2::Subnet

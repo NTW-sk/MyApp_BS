@@ -11,6 +11,18 @@ Parameters:
   ImageID:
     Type: String
     Default: ami-04d3ba818c434b384
+  MyIpAddressPublicServer22:
+    Type: String
+    Default: "0.0.0.0/0"
+  MyIpAddressPublicServer80:
+    Type: String
+    Default: "0.0.0.0/0"
+  MyIpAddressPrivateServer22:
+    Type: String
+    Default: "0.0.0.0/0"
+  MyIpAddressPrivateServer80:
+    Type: String
+    Default: "0.0.0.0/0"
 
 Resources:
   # Public EC2 Instance
@@ -19,15 +31,12 @@ Resources:
     Properties:
       InstanceType: t2.micro
       ImageId: !Ref ImageID
-      NetworkInterfaces:
-        - AssociatePublicIpAddress: true
-          DeviceIndex: 0
-          SubnetId: !Ref PublicSubnetId
-          GroupSet:
-            - !Ref PublicInstanceSecurityGroup
+      SubnetId: !Ref PublicSubnetId
+      SecurityGroupIds:
+        - !Ref PublicInstanceSecurityGroup
       Tags:
         - Key: Name
-          Value: PublicEC2Instance
+          Value: MyApp_WebServer
 
   # Private EC2 Instance
   PrivateEC2Instance:
@@ -35,14 +44,12 @@ Resources:
     Properties:
       InstanceType: t2.micro
       ImageId: !Ref ImageID
-      NetworkInterfaces:
-        - DeviceIndex: 0
-          SubnetId: !Ref PrivateSubnetId
-          GroupSet:
-            - !Ref PrivateInstanceSecurityGroup
+      SubnetId: !Ref PrivateSubnetId
+      SecurityGroupIds:
+        - !Ref PrivateInstanceSecurityGroup
       Tags:
         - Key: Name
-          Value: PrivateEC2Instance
+          Value: MyApp_AppServer
 
   # Security Group for Public EC2 Instance
   PublicInstanceSecurityGroup:
@@ -54,11 +61,11 @@ Resources:
         - IpProtocol: tcp
           FromPort: 22
           ToPort: 22
-          CidrIp: 0.0.0.0/0
+          CidrIp: !Ref MyIpAddressPublicServer22
         - IpProtocol: tcp
           FromPort: 80
           ToPort: 80
-          CidrIp: 0.0.0.0/0
+          CidrIp: !Ref MyIpAddressPublicServer80
 
   # Security Group for Private EC2 Instance
   PrivateInstanceSecurityGroup:
@@ -70,4 +77,8 @@ Resources:
         - IpProtocol: tcp
           FromPort: 80
           ToPort: 80
-          SourceSecurityGroupId: !Ref PublicInstanceSecurityGroup
+          CidrIp: !Ref MyIpAddressPrivateServer80
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !Ref MyIpAddressPrivateServer22
