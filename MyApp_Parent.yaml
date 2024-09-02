@@ -1,6 +1,12 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: Parent stack calling child stacks
 
+Parameters:
+  KeyName:
+    Description: "SSH access to the instance"
+    Type: AWS::EC2::KeyPair::KeyName
+    ConstraintDescription: "Must be the name of an existing EC2 KeyPair."
+
 Resources:
   # ネットワークスタック
   NetworkStack:
@@ -19,6 +25,7 @@ Resources:
         VpcId: !GetAtt NetworkStack.Outputs.VpcId
         PublicSubnetId: !GetAtt NetworkStack.Outputs.PublicSubnetId
         PrivateSubnetId: !GetAtt NetworkStack.Outputs.PrivateSubnetId
+        KeyName: !Ref KeyName
 
 Outputs:
   NetworkStackId:

@@ -26,8 +26,8 @@ Parameters:
   KeyName:
     Description: SSH access to the instance
     Type: AWS::EC2::KeyPair::KeyName
-    ConstraintDescription: BS_MyAPP
-
+    ConstraintDescription: must be the name of an existing EC2 KeyPair.
+    
 Resources:
   # Public EC2 Instance
   PublicEC2Instance:
