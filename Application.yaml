@@ -23,6 +23,10 @@ Parameters:
   MyIpAddressPrivateServer80:
     Type: String
     Default: "0.0.0.0/0"
+  KeyName:
+    Description: SSH access to the instance
+    Type: AWS::EC2::KeyPair::KeyName
+    ConstraintDescription: BS_MyAPP
 
 Resources:
   # Public EC2 Instance
@@ -32,6 +36,7 @@ Resources:
       InstanceType: t2.micro
       ImageId: !Ref ImageID
       SubnetId: !Ref PublicSubnetId
+      KeyName: !Ref KeyName
       SecurityGroupIds:
         - !Ref PublicInstanceSecurityGroup
       Tags:
@@ -45,6 +50,7 @@ Resources:
       InstanceType: t2.micro
       ImageId: !Ref ImageID
       SubnetId: !Ref PrivateSubnetId
+      KeyName: !Ref KeyName
       SecurityGroupIds:
         - !Ref PrivateInstanceSecurityGroup
       Tags:
