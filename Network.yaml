@@ -2,10 +2,24 @@ AWSTemplateFormatVersion: '2010-09-09'
 Description: Network stack
 
 Parameters:
+  EnvironmentName:
+    Type: String
+    Description: Name of the environment (e.g., Dev, Staging, Prod)
+  
   VpcCidr:
     Type: String
-    Default: 10.0.0.0/16
+    Default: 10.1.0.0/16
     Description: CIDR block for the VPC
+  
+  PublicSubnetCidr:
+    Type: String
+    Default: 10.1.1.0/24
+    Description: CIDR block for the Public Subnet
+  
+  PrivateSubnetCidr:
+    Type: String
+    Default: 10.1.2.0/24
+    Description: CIDR block for the Private Subnet
 
 Resources:
   # VPC
@@ -17,7 +31,7 @@ Resources:
       EnableDnsHostnames: true
       Tags:
         - Key: Name
-          Value: MyVPC
+          Value: !Sub "${EnvironmentName}-VPC"
 
   # Internet Gateway
   InternetGateway:
@@ -25,7 +39,7 @@ Resources:
     Properties:
       Tags:
       - Key: Name
-        Value: MyApp_IGW
+        Value: !Sub "${EnvironmentName}-IGW"
  
   AttachGateway:
     Type: "AWS::EC2::VPCGatewayAttachment"
@@ -38,35 +52,83 @@ Resources:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref MyVPC
-      CidrBlock: 10.0.1.0/24
+      CidrBlock: !Ref PublicSubnetCidr
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: PublicSubnet
+          Value: !Sub "${EnvironmentName}-PublicSubnet"
 
   # Private Subnet
   PrivateSubnet:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref MyVPC
-      CidrBlock: 10.0.2.0/24
+      CidrBlock: !Ref PrivateSubnetCidr
       MapPublicIpOnLaunch: false
       Tags:
         - Key: Name
-          Value: PrivateSubnet
+          Value: !Sub "${EnvironmentName}-PrivateSubnet"
+
+  # Route Table for Public Subnet
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref MyVPC
+      Tags:
+        - Key: Name
+          Value: !Sub "${EnvironmentName}-PublicRouteTable"
+
+  PublicRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  PublicSubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet
+      RouteTableId: !Ref PublicRouteTable
+
+  # Route Table for Private Subnet
+  PrivateRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref MyVPC
+      Tags:
+        - Key: Name
+          Value: !Sub "${EnvironmentName}-PrivateRouteTable"
+
+  PrivateSubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnet
+      RouteTableId: !Ref PrivateRouteTable
 
 Outputs:
   VpcId:
     Value: !Ref MyVPC
     Export:
-      Name: MyVpcId
+      Name: !Sub "${EnvironmentName}-VpcId"
 
   PublicSubnetId:
     Value: !Ref PublicSubnet
     Export:
-      Name: MyPublicSubnetId
+      Name: !Sub "${EnvironmentName}-PublicSubnetId"
 
   PrivateSubnetId:
     Value: !Ref PrivateSubnet
     Export:
-      Name: MyPrivateSubnetId
+      Name: !Sub "${EnvironmentName}-PrivateSubnetId"
+
+  PublicRouteTableId:
+    Value: !Ref PublicRouteTable
+    Export:
+      Name: !Sub "${EnvironmentName}-PublicRouteTableId"
+
+  PrivateRouteTableId:
+    Value: !Ref PrivateRouteTable
+    Export:
+      Name: !Sub "${EnvironmentName}-PrivateRouteTableId"
+  
