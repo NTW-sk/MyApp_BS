@@ -1,0 +1,10 @@
+- name: Install Squid
+  yum:
+    name: squid
+    state: present
+
+- name: Start and enable Squid service
+  service:
+    name: squid
+    state: started
+    enabled: true

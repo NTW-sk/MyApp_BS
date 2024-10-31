@@ -1,0 +1,8 @@
+<VirtualHost *:80>
+    ServerName 54.249.43.213
+    # Flaskサーバへのリバースプロキシ設定
+    ProxyPass / http://10.2.3.218:5000/
+    ProxyPassReverse / http://10.2.3.218:5000/
+    ErrorLog /var/log/httpd/error.log
+    CustomLog /var/log/httpd/access.log combined
+</VirtualHost>

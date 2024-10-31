@@ -1,0 +1,20 @@
+---
+- name: Install Apache
+  yum:
+    name: httpd
+    state: present
+
+- name: Copy Apache configuration template
+  template:
+    src: apache.conf.j2
+    dest: /etc/httpd/conf.d/flask_proxy.conf
+  notify: 
+    - restart apache
+
+- name: Start and enable Apache service
+  service:
+    name: httpd
+    state: started
+    enabled: true
+  notify: 
+    - restart apache

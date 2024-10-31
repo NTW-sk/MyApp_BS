@@ -1,0 +1,23 @@
+- name: Squid install and proxy configuration
+  hosts: webserver
+  become: true
+  roles:
+    - squid
+
+- name: Add proxy to /etc/yum.conf
+  hosts: appserver
+  become: yes
+  roles:
+    - proxy
+
+- name: Install and configure Apache as reverse proxy
+  hosts: webserver
+  become: true
+  roles:
+    - apache
+
+- name: Install and configure flask app
+  hosts: appserver
+  become: true
+  roles:
+    - flask

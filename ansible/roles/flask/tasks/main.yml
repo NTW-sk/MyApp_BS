@@ -1,0 +1,86 @@
+---
+- name: Install Python3 and pip
+  yum:
+    name: 
+      - python3
+      - python3-pip
+    state: present
+  become: true
+
+- name: Create pip config directory for root user
+  file:
+    path: /root/.config/pip
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+  become: true
+  
+- name: Ensure [global] section exists in root's pip.conf
+  lineinfile:
+    path: /root/.config/pip/pip.conf
+    create: yes
+    line: "[global]"
+    state: present
+  become: true
+
+- name: Configure proxy settings for pip
+  lineinfile:
+    path: /root/.config/pip/pip.conf
+    line: "proxy = http://[appサーバのIPアドレス]:3128"
+    state: present
+  become: true
+
+- name: Install Flask using pip
+  pip:
+    name: flask
+    executable: pip3
+  become: true
+
+- name: Create Flask app directory
+  file:
+    path: /var/www/flaskapp
+    state: directory
+    owner: root
+    group: root
+  become: true
+
+- name: Create Flask app
+  copy:
+    dest: /var/www/flaskapp/app.py
+    content: |
+      from flask import Flask
+      app = Flask(__name__)
+
+      @app.route('/')
+      def hello_world():
+        return 'Hello, World!'
+
+      if __name__ == '__main__':
+        app.run(host='0.0.0.0', port=5000)
+  become: true
+
+- name: Create a systemd service for the Flask app
+  copy:
+    dest: /etc/systemd/system/flaskapp.service
+    content: |
+      [Unit]
+      Description=Flask app
+      After=network.target
+
+      [Service]
+      User=ec2-user
+      Group=ec2-user
+      WorkingDirectory=/var/www/flaskapp
+      ExecStart=/usr/bin/python3 /var/www/flaskapp/app.py
+
+      [Install]
+      WantedBy=multi-user.target
+  become: true
+      
+- name: Start and enable Flask service
+  systemd:
+    name: flaskapp
+    enabled: true
+    state: started
+  become: true

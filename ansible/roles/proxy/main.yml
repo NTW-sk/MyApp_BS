@@ -1,0 +1,10 @@
+---
+- name: Ensure proxy is set in yum.conf
+    lineinfile:
+    path: /etc/yum.conf
+    regexp: '^proxy='
+    line: 'proxy=http://10.2.4.110:3128' 
+    state: present
+    insertafter: '[main]'
+    notify:
+      - restart yum
