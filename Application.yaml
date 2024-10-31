@@ -26,7 +26,7 @@ Parameters:
   KeyName:
     Description: SSH access to the instance
     Type: AWS::EC2::KeyPair::KeyName
-    ConstraintDescription: must be the name of an existing EC2 KeyPair.
+    ConstraintDescription: existing EC2 KeyPair.
     
 Resources:
   # Public EC2 Instance
@@ -56,6 +56,15 @@ Resources:
       Tags:
         - Key: Name
           Value: MyApp_AppServer
+  
+  MyEIP:
+    Type: 'AWS::EC2::EIP'
+
+  MyEIPAssociation:
+    Type: 'AWS::EC2::EIPAssociation'
+    Properties: 
+      InstanceId: !Ref PublicEC2Instance
+      EIP: !Ref MyEIP
 
   # Security Group for Public EC2 Instance
   PublicInstanceSecurityGroup:
@@ -72,6 +81,11 @@ Resources:
           FromPort: 80
           ToPort: 80
           CidrIp: !Ref MyIpAddressPublicServer80
+        - IpProtocol: tcp
+          FromPort: 3128
+          ToPort: 3128
+          CidrIp: !Ref MyIpAddressPublicServer80
+          description: Squid Proxy
 
   # Security Group for Private EC2 Instance
   PrivateInstanceSecurityGroup:
@@ -97,3 +111,8 @@ Resources:
           ToPort: 65535
           SourceSecurityGroupId: !Ref PublicInstanceSecurityGroup
           description: Ansible
+        - IpProtocol: tcp
+          FromPort: 3128
+          ToPort: 3128
+          SourceSecurityGroupId: !Ref PublicInstanceSecurityGroup
+          description: Squid Proxy
